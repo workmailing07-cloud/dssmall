@@ -19,6 +19,17 @@ import { grabServerService } from "@/lib/services/server/grab.server";
 function toPublicUser(doc: any) {
     const o = doc.toObject ? doc.toObject() : { ...doc };
     delete o.password;
+    if (!o.role) o.role = "USER";
+    if (!o.status) o.status = "ACTIVE";
+    if (o.balance === undefined || o.balance === null) o.balance = 0;
+    if (!o.createdAt && o._id) {
+        try {
+            const hex = o._id.toString();
+            o.createdAt = new Date(parseInt(hex.substring(0, 8), 16) * 1000);
+        } catch {
+            o.createdAt = new Date();
+        }
+    }
     return o;
 }
 
@@ -52,24 +63,40 @@ export const adminUsersServer = {
         return assertAdminPermission(adminUserId, "MANAGE_USERS");
     },
 
-    async list(search?: string, role?: string, limit = 200) {
+    async list(search?: string, role?: string, limit = 1000) {
         await dbConnect();
         const query: Record<string, unknown> = {};
-        if (role === "ADMIN" || role === "USER") query.role = role;
+        if (role === "USER") {
+            query.$or = [{ role: "USER" }, { role: { $exists: false } }, { role: null }, { role: "" }];
+        } else if (role === "ADMIN") {
+            query.role = "ADMIN";
+        }
+
         if (search?.trim()) {
             const s = search.trim();
-            query.$or = [
+            const searchOr = [
                 { name: { $regex: s, $options: "i" } },
                 { email: { $regex: s, $options: "i" } },
                 { invitationCode: { $regex: s, $options: "i" } },
             ];
+            if (query.$or) {
+                query.$and = [
+                    { $or: query.$or },
+                    { $or: searchOr },
+                ];
+                delete query.$or;
+            } else {
+                query.$or = searchOr;
+            }
         }
-        return User.find(query)
+        const docs = await User.find(query)
             .select("-password")
             .populate("staffRole", "name permissions")
-            .sort({ createdAt: -1 })
-            .limit(Math.min(limit, 500))
+            .sort({ createdAt: -1, _id: -1 })
+            .limit(Math.min(limit, 2000))
             .lean();
+
+        return docs.map(toPublicUser);
     },
 
     async getById(id: string) {

@@ -149,6 +149,11 @@ export function UserManagement() {
                         <option value="USER">Users</option>
                         <option value="ADMIN">Admins</option>
                     </select>
+                    {usersQuery.data && (
+                        <div className="flex items-center px-3 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-xl whitespace-nowrap">
+                            Total: {usersQuery.data.length} Users
+                        </div>
+                    )}
                 </div>
                 <button
                     onClick={() => setShowCreate(true)}
@@ -194,7 +199,7 @@ export function UserManagement() {
                                                 u.role === "ADMIN" ? "bg-amber-500/15 text-amber-600" : "bg-blue-500/15 text-blue-600"
                                             )}
                                         >
-                                            {u.role}
+                                            {u.role || "USER"}
                                         </span>
                                     </td>
                                     <td className="p-3 text-xs">
@@ -213,7 +218,7 @@ export function UserManagement() {
                                         )}
                                     </td>
                                     <td className="p-3 font-mono text-sm">{Number(u.balance || 0).toFixed(4)}</td>
-                                    <td className="p-3 text-xs font-bold">{u.status}</td>
+                                    <td className="p-3 text-xs font-bold">{u.status || "ACTIVE"}</td>
                                     <td className="p-3 font-mono text-xs">{u.invitationCode || "—"}</td>
                                     <td className="p-3 text-right space-x-1">
                                         <button

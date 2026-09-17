@@ -28,8 +28,12 @@ export default function LoginPage() {
         });
 
         if (res?.error) {
-            setError("Invalid credentials");
-            toast.error("Invalid email or password");
+            let errorMsg = res.error;
+            if (errorMsg === "CredentialsSignin") {
+                errorMsg = "Password incorrect or invalid credentials";
+            }
+            setError(errorMsg);
+            toast.error(errorMsg);
             setLoading(false);
         } else {
             toast.success("Welcome back!");

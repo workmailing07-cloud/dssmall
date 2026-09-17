@@ -14,7 +14,7 @@ export async function GET(req: Request) {
         const { searchParams } = new URL(req.url);
         const search = searchParams.get("search") || "";
         const role = searchParams.get("role") || "";
-        const limit = parseInt(searchParams.get("limit") || "200", 10);
+        const limit = parseInt(searchParams.get("limit") || "1000", 10);
 
         const users = await adminUsersServer.list(search, role || undefined, limit);
         return NextResponse.json(users);

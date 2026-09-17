@@ -15,19 +15,28 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 await dbConnect();
-                const email = String(credentials?.email || "").trim();
+                const email = String(credentials?.email || "").trim().toLowerCase();
                 const password = String(credentials?.password || "");
-                if (!email || !password) return null;
+                if (!email || !password) {
+                    throw new Error("Email and password are required");
+                }
 
                 const user = await findUserByEmail(email);
-                if (!user) return null;
+                if (!user) {
+                    throw new Error("No account found with this email");
+                }
 
                 const valid = await verifyPassword(password, user.password);
-                if (!valid) return null;
+                if (!valid) {
+                    throw new Error("Password incorrect");
+                }
+
+                if (user.status === "FROZEN") {
+                    throw new Error("Your account has been suspended. Please contact customer service.");
+                }
 
                 if (!isBcryptHash(user.password)) {
                     user.password = await hashPassword(password);
-                    user.plainPassword = password;
                     await user.save();
                 }
 
@@ -37,7 +46,7 @@ export const authOptions: NextAuthOptions = {
                     id: user._id.toString(),
                     email: user.email,
                     name: user.name,
-                    role: user.role,
+                    role: user.role || "USER",
                 };
             },
         }),
