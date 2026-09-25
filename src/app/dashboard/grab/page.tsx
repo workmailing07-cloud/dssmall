@@ -206,8 +206,8 @@ export default function GrabPage() {
                     await requestCS({ orderId: currentOrder._id, message: "I hit a combo order, please help me unlock it.", type: "COMBO_UNLOCK" });
                     setShowModal(false);
                 }}
-                onDepositSubmit={async (amount, depositAddress) => {
-                    await createTransaction({ type: "DEPOSIT", amount, depositAddress });
+                onDepositSubmit={async (amount) => {
+                    await createTransaction({ type: "DEPOSIT", amount });
                 }}
                 isDepositPending={isProcessing}
                 hasPendingDeposit={hasPendingDeposit}

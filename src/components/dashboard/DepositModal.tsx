@@ -14,7 +14,7 @@ interface DepositModalProps {
     requiredAmount?: number;
     /** When true, user already has a PENDING deposit — block another until processed. */
     hasPendingDeposit?: boolean;
-    onSubmitPending?: (amount: number, depositAddress: string) => Promise<void>;
+    onSubmitPending?: (amount: number) => Promise<void>;
     isPending?: boolean;
 }
 
@@ -126,7 +126,7 @@ export function DepositModal({ isOpen, onClose, requiredAmount, hasPendingDeposi
         if (!val || val <= 0) { toast.error("Enter the amount you sent"); return; }
         if (!onSubmitPending) return;
         try {
-            await onSubmitPending(val, addr.address ?? "");
+            await onSubmitPending(val);
             setSubmittedAmount(val);
             setSubmitted(true);
         } catch (error: unknown) {

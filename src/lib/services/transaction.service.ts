@@ -4,12 +4,11 @@ export const transactionService = {
     async createTransaction(
         type: "DEPOSIT" | "WITHDRAW",
         amount: number,
-        depositAddress?: string,
         withdrawAddress?: string,
         withdrawNetwork?: string,
     ) {
         const response = await apiClient.post("/transactions", {
-            type, amount, depositAddress, withdrawAddress, withdrawNetwork,
+            type, amount, withdrawAddress, withdrawNetwork,
         });
         return response.data;
     },

@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
-import DepositAddress from "@/lib/models/DepositAddress";
+import Transaction from "@/lib/models/Transaction";
+import { getActiveDepositAddress } from "@/lib/services/server/deposit-address.server";
 
 // Returns the active deposit address for the current user.
 // User-specific address takes priority over the global one.
@@ -16,27 +17,21 @@ export async function GET() {
         await dbConnect();
         const userId = (session.user as any).id;
 
-        // 1. Look for a user-specific active address first
-        const userAddress = await DepositAddress.findOne({
+        const pendingDeposit = await Transaction.findOne({
             userId,
-            isActive: true,
-        }).sort({ createdAt: -1 });
+            type: "DEPOSIT",
+            status: "PENDING",
+        }).sort({ createdAt: -1 }).lean();
 
-        if (userAddress) {
-            return NextResponse.json({ address: userAddress.address, network: userAddress.network });
+        if (pendingDeposit?.depositAddress) {
+            const current = await getActiveDepositAddress(userId);
+            return NextResponse.json({
+                address: pendingDeposit.depositAddress,
+                network: pendingDeposit.depositNetwork || current.network,
+            });
         }
 
-        // 2. Fall back to global address (userId: null)
-        const globalAddress = await DepositAddress.findOne({
-            userId: null,
-            isActive: true,
-        }).sort({ createdAt: -1 });
-
-        if (!globalAddress) {
-            return NextResponse.json({ address: null, network: "TRON (TRC-20)" });
-        }
-
-        return NextResponse.json({ address: globalAddress.address, network: globalAddress.network });
+        return NextResponse.json(await getActiveDepositAddress(userId));
     } catch (error: any) {
         return NextResponse.json({ error: error.message || "Server error" }, { status: 500 });
     }

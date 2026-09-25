@@ -7,20 +7,20 @@ import { cn } from "@/lib/utils";
 const NAMES = ["James", "Maria", "Alex", "Chen", "Sarah", "Yuki", "Ahmed", "Elena", "Liam", "Sofia"];
 const PRODUCTS = ["Luxury Watch", "iPhone 15 Pro", "Crypto Node", "Designer Bag", "Graphics Card", "Gaming Laptop", "Smart TV", "Dyson Airwrap"];
 
+function createInitialActivities() {
+    return Array.from({ length: 5 }).map((_, i) => ({
+        id: i,
+        name: NAMES[i % NAMES.length],
+        product: PRODUCTS[i % PRODUCTS.length],
+        commission: (Math.random() * 5 + 1).toFixed(2),
+        time: "Just now"
+    }));
+}
+
 export function LiveOrderFeed() {
-    const [activities, setActivities] = useState<any[]>([]);
+    const [activities, setActivities] = useState<any[]>(createInitialActivities);
 
     useEffect(() => {
-        // Initial set
-        const initials = Array.from({ length: 5 }).map((_, i) => ({
-            id: i,
-            name: NAMES[Math.floor(Math.random() * NAMES.length)],
-            product: PRODUCTS[Math.floor(Math.random() * PRODUCTS.length)],
-            commission: (Math.random() * 5 + 1).toFixed(2),
-            time: "Just now"
-        }));
-        setActivities(initials);
-
         const interval = setInterval(() => {
             const newActivity = {
                 id: Date.now(),

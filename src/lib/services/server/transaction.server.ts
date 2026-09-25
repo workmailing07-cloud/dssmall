@@ -2,6 +2,7 @@ import User from "@/lib/models/User";
 import Transaction from "@/lib/models/Transaction";
 import dbConnect from "@/lib/mongodb";
 import { assertAdminPermission } from "@/lib/services/server/admin-auth.server";
+import { getActiveDepositAddress } from "@/lib/services/server/deposit-address.server";
 
 /** Credit an approved deposit toward the user's pending combo order(s). */
 async function applyDepositToPendingCombo(userId: string, depositAmount: number) {
@@ -43,7 +44,6 @@ export const transactionServerService = {
         userId: string,
         type: "DEPOSIT" | "WITHDRAW",
         amount: number,
-        depositAddress?: string,
         withdrawAddress?: string,
         withdrawNetwork?: string,
     ) {
@@ -110,6 +110,10 @@ export const transactionServerService = {
             }
         }
 
+        const depositConfig = type === "DEPOSIT"
+            ? await getActiveDepositAddress(userId)
+            : null;
+
         // Regular users: create a PENDING request
         let finalWithdrawAddress = withdrawAddress || "";
         let finalWithdrawNetwork = withdrawNetwork || "";
@@ -127,7 +131,8 @@ export const transactionServerService = {
             type,
             amount,
             status: "PENDING",
-            depositAddress: depositAddress || "",
+            depositAddress: depositConfig?.address || "",
+            depositNetwork: depositConfig?.network || "",
             withdrawAddress: finalWithdrawAddress,
             withdrawNetwork: finalWithdrawNetwork,
         });

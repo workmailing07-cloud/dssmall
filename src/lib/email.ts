@@ -13,7 +13,7 @@ export async function findUserByEmail(email: string) {
     const normalized = normalizeEmail(email);
     if (!normalized) return null;
 
-    let user = await User.findOne({ email: normalized });
+    const user = await User.findOne({ email: normalized });
     if (user) return user;
 
     return User.findOne({

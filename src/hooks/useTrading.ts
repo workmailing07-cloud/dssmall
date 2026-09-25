@@ -38,10 +38,10 @@ export function useTrading() {
 
     // Mutation for creating transactions
     const transactionMutation = useMutation({
-        mutationFn: ({ type, amount, depositAddress, withdrawAddress, withdrawNetwork }: {
+        mutationFn: ({ type, amount, withdrawAddress, withdrawNetwork }: {
             type: "DEPOSIT" | "WITHDRAW"; amount: number;
-            depositAddress?: string; withdrawAddress?: string; withdrawNetwork?: string;
-        }) => transactionService.createTransaction(type, amount, depositAddress, withdrawAddress, withdrawNetwork),
+            withdrawAddress?: string; withdrawNetwork?: string;
+        }) => transactionService.createTransaction(type, amount, withdrawAddress, withdrawNetwork),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["user-me"] });
             queryClient.invalidateQueries({ queryKey: ["transactions"] });

@@ -246,8 +246,8 @@ export default function MinePage() {
                 isOpen={showDeposit}
                 onClose={() => setShowDeposit(false)}
                 hasPendingDeposit={hasPendingDeposit}
-                onSubmitPending={async (amount, depositAddress) => {
-                    await createTransaction({ type: "DEPOSIT", amount, depositAddress });
+                onSubmitPending={async (amount) => {
+                    await createTransaction({ type: "DEPOSIT", amount });
                 }}
                 isPending={isProcessing}
             />

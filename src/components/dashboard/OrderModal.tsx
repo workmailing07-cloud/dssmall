@@ -21,7 +21,7 @@ interface OrderModalProps {
     isProcessing: boolean;
     onContactCS?: () => void;
     error?: string | null;
-    onDepositSubmit?: (amount: number, depositAddress: string) => Promise<void>;
+    onDepositSubmit?: (amount: number) => Promise<void>;
     isDepositPending?: boolean;
     /** Wallet balance — combo orders show order amount as requiredDeposit + balance */
     balance?: number;

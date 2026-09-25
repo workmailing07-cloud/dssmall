@@ -6,7 +6,7 @@ import { DepositModal } from "./DepositModal";
 import { useTrading } from "@/hooks/useTrading";
 
 interface TransactionFormProps {
-    onAction: (type: "DEPOSIT" | "WITHDRAW", amount: number, depositAddress?: string) => Promise<unknown>;
+    onAction: (type: "DEPOSIT" | "WITHDRAW", amount: number) => Promise<unknown>;
     isPending: boolean;
     balance: number;
 }
@@ -36,8 +36,8 @@ export function TransactionForm({ onAction, isPending, balance }: TransactionFor
         }
     };
 
-    const handleDepositSubmit = async (depositAmount: number, depositAddress: string) => {
-        await onAction("DEPOSIT", depositAmount, depositAddress);
+    const handleDepositSubmit = async (depositAmount: number) => {
+        await onAction("DEPOSIT", depositAmount);
     };
 
     return (

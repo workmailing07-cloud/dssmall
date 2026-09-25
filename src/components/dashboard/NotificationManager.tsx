@@ -46,7 +46,7 @@ export function NotificationManager() {
                 });
             });
         }
-    }, [notifications]);
+    }, [notifications, markAsReadMutation]);
 
     return null; // This component handles side effects only
 }

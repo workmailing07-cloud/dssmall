@@ -4,7 +4,7 @@ import { useAdmin } from "@/hooks/useAdmin";
 import { useTrading } from "@/hooks/useTrading";
 import { adminService } from "@/lib/services/admin.service";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { CheckCircle, XCircle, Clock, RefreshCw, MessageCircle, ArrowLeftRight, Wallet, Users, Copy, Search, UserPlus2, UserRound, Shield } from "lucide-react";
 import { toast } from "sonner";
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
     const [taskCooldownMinutes, setTaskCooldownMinutes] = useState("20");
     const [loadingSupportContact, setLoadingSupportContact] = useState(false);
     const [savingSupportContact, setSavingSupportContact] = useState(false);
-    const hasPerm = (id: string) => isSuperAdmin || adminPermissions.includes(id);
+    const hasPerm = useCallback((id: string) => isSuperAdmin || adminPermissions.includes(id), [isSuperAdmin, adminPermissions]);
     const getErrorMessage = (e: unknown, fallback: string) => (e instanceof Error ? e.message : fallback);
 
     useEffect(() => {
@@ -148,7 +148,7 @@ export default function AdminDashboard() {
         }
     };
 
-    const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = [
+    const tabs: { id: Tab; label: string; icon: React.ReactNode; badge?: number }[] = useMemo(() => [
         ...(hasPerm("MANAGE_TRANSACTIONS") ? [{ id: "TRANSACTIONS" as Tab, label: "Transactions", icon: <ArrowLeftRight size={18} /> }] : []),
         ...(hasPerm("MANAGE_CS") ? [{ id: "CS_REQUESTS" as Tab, label: "CS Requests", icon: <MessageCircle size={18} />, badge: csRequests.length }] : []),
         ...(hasPerm("MANAGE_TASK_REQUESTS") ? [{ id: "TASK_REQUESTS" as Tab, label: "Task Requests", icon: <Clock size={18} />, badge: taskRequests.length }] : []),
@@ -168,7 +168,7 @@ export default function AdminDashboard() {
             : []),
         ...(hasPerm("VIEW_HISTORY") ? [{ id: "HISTORY" as Tab, label: "History", icon: <Clock size={18} /> }] : []),
         ...(hasPerm("MANAGE_ROLES") ? [{ id: "ROLES" as Tab, label: "Roles", icon: <Shield size={18} /> }] : []),
-    ];
+    ], [hasPerm, csRequests.length, taskRequests.length, passwordRequests.length, withdrawWalletRequests.length]);
 
     useEffect(() => {
         if (!tabs.some((t) => t.id === activeTab) && tabs[0]) setActiveTab(tabs[0].id);
@@ -195,7 +195,7 @@ export default function AdminDashboard() {
         return () => {
             alive = false;
         };
-    }, [isSuperAdmin, adminPermissions]);
+    }, [hasPerm, isSuperAdmin, adminPermissions]);
 
     const handleRefresh = async () => {
         try {

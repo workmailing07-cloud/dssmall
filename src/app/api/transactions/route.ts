@@ -10,7 +10,7 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { type, amount, depositAddress, withdrawAddress, withdrawNetwork } = await req.json();
+        const { type, amount, withdrawAddress, withdrawNetwork } = await req.json();
         const userId = (session.user as any).id;
 
         if (!type || !amount || amount <= 0) {
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
         }
 
         const result = await transactionServerService.processTransaction(
-            userId, type, amount, depositAddress, withdrawAddress, withdrawNetwork
+            userId, type, amount, withdrawAddress, withdrawNetwork
         );
         return NextResponse.json({ message: "Success", ...result });
     } catch (error: any) {

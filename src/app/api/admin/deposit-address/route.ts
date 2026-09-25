@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import DepositAddress from "@/lib/models/DepositAddress";
 import { assertAdminPermission } from "@/lib/services/server/admin-auth.server";
+import { validateDepositAddress } from "@/lib/services/server/deposit-address.server";
 
 async function assertAdmin(session: any) {
     if (!session || !(session.user as any).id) throw new Error("Unauthorized");
@@ -23,7 +24,13 @@ export async function GET() {
 
         return NextResponse.json(addresses);
     } catch (error: any) {
-        const status = error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
+        const status = error.message === "Unauthorized"
+            ? 401
+            : error.message === "Forbidden"
+                ? 403
+                : error.message?.startsWith("Invalid deposit") || error.message === "Unsupported deposit network" || error.message === "Deposit address is not configured"
+                    ? 400
+                    : 500;
         return NextResponse.json({ error: error.message }, { status });
     }
 }
@@ -35,7 +42,7 @@ export async function POST(req: Request) {
         await assertAdmin(session);
 
         const { address, network, userId } = await req.json();
-        if (!address) return NextResponse.json({ error: "Address is required" }, { status: 400 });
+        const validatedAddress = validateDepositAddress(address, network || "TRON (TRC-20)");
 
         // Deactivate any previous active address for the same scope
         await DepositAddress.updateMany(
@@ -44,7 +51,7 @@ export async function POST(req: Request) {
         );
 
         const newAddress = await DepositAddress.create({
-            address,
+            address: validatedAddress,
             network: network || "TRON (TRC-20)",
             userId: userId || null,
             isActive: true,
@@ -52,7 +59,13 @@ export async function POST(req: Request) {
 
         return NextResponse.json(newAddress);
     } catch (error: any) {
-        const status = error.message === "Unauthorized" ? 401 : error.message === "Forbidden" ? 403 : 500;
+        const status = error.message === "Unauthorized"
+            ? 401
+            : error.message === "Forbidden"
+                ? 403
+                : error.message?.startsWith("Invalid deposit") || error.message === "Unsupported deposit network" || error.message === "Deposit address is not configured"
+                    ? 400
+                    : 500;
         return NextResponse.json({ error: error.message }, { status });
     }
 }
